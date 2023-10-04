@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 class Scene(models.Model):
     title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=200)
     text = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
     show_hp = models.BooleanField(default=False)

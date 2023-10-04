@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class SceneView(View):
+    def extra_context(self):
+        return {}
+
     def get(self, request, scene_id):
         if not request.user.is_authenticated:
             return redirect('login_view')
@@ -25,14 +28,44 @@ class SceneView(View):
         scene.handle_quest_progress(request.user)
         scene.handle_button_effects(request.user)
         player = request.user.player
-        player.previous_scene = scene
-        player.save()
+        self.original_scene = player.previous_scene
+        # If this class is not SceneView, then do not save previous scene
+        if self.__class__ == SceneView:
+            player.previous_scene = scene
+            player.save()
 
         context = {
             'scene': scene,
             'scene_buttons': scene_buttons,
         }
+        context.update(self.extra_context())
         return render(request, 'adventures/scene.html', context)
+
+
+class SceneViewWithBack(SceneView):
+    def extra_context(self):
+        try:
+            return {
+                'back_scene': self.original_scene.id,
+            }
+        except AttributeError:
+            return {}
+
+class InventoryView(SceneViewWithBack):
+    def get(self, request):
+        scene = get_object_or_404(m.Scene, slug='inventory')
+        return super().get(request, scene_id=scene.pk)
+
+class ShipView(SceneViewWithBack):
+    def get(self, request):
+        scene = get_object_or_404(m.Scene, slug='ship')
+        return super().get(request, scene_id=scene.pk)
+
+
+class PlayerView(SceneViewWithBack):
+    def get(self, request):
+        scene = get_object_or_404(m.Scene, slug='player')
+        return super().get(request, scene_id=scene.pk)
 
 
 class LoginView(View):

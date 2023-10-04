@@ -1,0 +1,45 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+{% block body %}
+{% endblock %}
+<div id="last-part">
+<a class="last-button" href="/adventure/inventory">INV</a>
+<a class="last-button" href="/adventure/ship">SHP</a>
+<a class="last-button" href="/adventure/player">PLR</a>
+</div>
+<style>
+#last-part {
+    position: fixed;
+    bottom: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    height: 10vh;
+    width: 100vw;
+}
+.last-button {
+    width: 32vw;
+    padding: 0.5rem 1rem;
+    margin: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 0.2rem;
+    text-decoration: none;
+    font-size: 2rem;
+    border: 0.2rem solid #4CAF50;
+    flex-grow: 1;
+}
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: #333;
+    color: #fff;
+}
+</style>
+</body>
+</html>
