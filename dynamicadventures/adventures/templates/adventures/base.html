@@ -6,11 +6,13 @@
 <body>
 {% block body %}
 {% endblock %}
+{% block lastpart %}
 <div id="last-part">
 <a class="last-button" href="/adventure/inventory">INV</a>
 <a class="last-button" href="/adventure/ship">SHP</a>
 <a class="last-button" href="/adventure/player">PLR</a>
 </div>
+{% endblock %}
 <style>
 #last-part {
     position: fixed;

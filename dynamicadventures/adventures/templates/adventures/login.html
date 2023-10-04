@@ -1,3 +1,5 @@
+{% extends 'adventures/base.html' %}
+{% block body %}
 <h2>Anna username</h2>
 <input id="username">
 <input type="button" id="btn" value="Submit">
@@ -17,3 +19,6 @@ input.addEventListener("keyup", function(event) {
     }
 });
 </script>
+{% endblock %}
+{% block lastpart %}
+{% endblock %}

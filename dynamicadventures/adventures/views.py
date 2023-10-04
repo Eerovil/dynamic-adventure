@@ -16,15 +16,20 @@ class SceneView(View):
     def extra_context(self):
         return {}
 
+    def scene_buttons_override(self, request, scene):
+        return []
+
     def get(self, request, scene_id):
         if not request.user.is_authenticated:
             return redirect('login_view')
         scene = get_object_or_404(m.Scene, pk=scene_id)
-        scene_buttons = [
-            btn for btn in
-            m.SceneButton.objects.filter(scene=scene)
-            if btn.visible_for_user(request.user)
-        ]
+        scene_buttons = self.scene_buttons_override(request, scene)
+        if not scene_buttons:
+            scene_buttons = [
+                btn for btn in
+                m.SceneButton.objects.filter(scene=scene)
+                if btn.visible_for_user(request.user)
+            ]
         scene.handle_quest_progress(request.user)
         scene.handle_button_effects(request.user)
         player = request.user.player
@@ -52,9 +57,20 @@ class SceneViewWithBack(SceneView):
             return {}
 
 class InventoryView(SceneViewWithBack):
+    def extra_context(self):
+        ret = super().extra_context()
+        if self.request.GET.get('item'):
+            item = get_object_or_404(m.Item, pk=self.request.GET.get('item'))
+            ret['description_override'] = item.description
+        return ret
+
     def get(self, request):
         scene = get_object_or_404(m.Scene, slug='inventory')
         return super().get(request, scene_id=scene.pk)
+
+    def scene_buttons_override(self, request, scene):
+        return request.user.player.inventory_as_buttons(scene)
+
 
 class ShipView(SceneViewWithBack):
     def get(self, request):
@@ -84,5 +100,8 @@ class LoginView(View):
             except m.Player.DoesNotExist:
                 player = m.Player(user=user)
                 player.save()
-            return redirect('scene_view', scene_id=1)
+            for scene in m.Scene.objects.all():
+                if scene.slug in ['inventory', 'ship', 'player']:
+                    continue
+                return redirect('scene_view', scene_id=scene.pk)
         return render(request, 'adventures/login.html')

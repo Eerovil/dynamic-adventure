@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class Scene(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200)
+    slug = models.SlugField(max_length=200, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
     show_hp = models.BooleanField(default=False)
@@ -76,11 +76,11 @@ class SceneButton(models.Model):
             user.player.ship_health += self.hp_change
             user.player.save()
         if self.item_add:
-            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_add.name)
+            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_add)
             inventory_row.quantity += 1
             inventory_row.save()
         if self.item_remove:
-            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_remove.name)
+            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_remove)
             inventory_row.quantity -= 1
             if inventory_row.quantity <= 0:
                 inventory_row.delete()
@@ -160,10 +160,23 @@ class Player(models.Model):
     def __str__(self):
         return self.user.username
 
+    def inventory_as_buttons(self, current_scene):
+        ret = []
+        for row in self.inventoryrow_set.all():
+            button = SceneButton(
+                text=f'{row.item} x{row.quantity}',
+                image=row.item.image,
+                next_scene=current_scene,
+                scene=current_scene,
+            )
+            button.next_scene_url = '/adventure/inventory/?item={}'.format(row.item.id)
+            ret.append(button)
+        return ret
+
 
 class InventoryRow(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    item = models.CharField(max_length=200)
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
 
 
