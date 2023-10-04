@@ -16,10 +16,27 @@ class SceneAdmin(admin.ModelAdmin):
     inlines = [SceneButtonInline]
 
 
+class QuestLineRowSceneButtonInline(admin.TabularInline):
+    fk_name = 'questline_row'
+    model = models.SceneButton
+    extra = 1
+
+
+class QuestLineRowInline(admin.TabularInline):
+    model = models.QuestLineRow
+    extra = 1
+    inlines = [QuestLineRowSceneButtonInline]
+
+
+class QuestLineAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+    inlines = [QuestLineRowInline]
+
+
 admin.site.register(models.Scene, SceneAdmin)
 admin.site.register(models.SceneButton)
 admin.site.register(models.Player)
 admin.site.register(models.InventoryRow)
 admin.site.register(models.Item)
 admin.site.register(models.QuestLineRow)
-admin.site.register(models.QuestLine)
+admin.site.register(models.QuestLine, QuestLineAdmin)

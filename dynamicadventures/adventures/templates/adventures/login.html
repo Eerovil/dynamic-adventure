@@ -1,0 +1,19 @@
+<h2>Anna username</h2>
+<input id="username">
+<input type="button" id="btn" value="Submit">
+
+<script>
+const el = document.getElementById("btn");
+const login = function(event) {
+    const username = document.getElementById("username").value;
+    window.location.href = "?username=" + username;
+}
+el.addEventListener("click", login);
+const input = document.getElementById("username");
+input.addEventListener("keyup", function(event) {
+    if (event.keyCode === 13) {
+        event.preventDefault();
+        login();
+    }
+});
+</script>
