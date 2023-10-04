@@ -35,8 +35,14 @@ class SceneButton(models.Model):
 
 
 class ShopKeeper(models.Model):
-    scene = models.ForeignKey(Scene, on_delete=models.CASCADE)
-    parent_scene = models.ForeignKey(Scene, on_delete=models.CASCADE)
+    scene = models.ForeignKey(
+        Scene, on_delete=models.CASCADE,
+        related_name='shop_scene', null=True, blank=True
+    )
+    parent_scene = models.ForeignKey(
+        Scene, on_delete=models.CASCADE,
+        related_name='parent_scene_for_shop', null=True, blank=True
+    )
     scene_button = models.ForeignKey(
         SceneButton, on_delete=models.CASCADE,
         related_name='shop_scene_button', null=True, blank=True,

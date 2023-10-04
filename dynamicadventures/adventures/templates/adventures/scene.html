@@ -1,0 +1,22 @@
+<h1>{{ scene.title }}</h1>
+<p>{{ scene.description }}</p>
+
+{% for scene_button in scene_buttons %}
+    <a href="{% url 'scene_view' scene_button.next_scene.id %}">{{ scene_button.text }}</a>
+{% endfor %}
+
+
+{% if scene.timeout and scene.timeout_next_scene %}
+<p id="timeout_display">Aikaa jäljellä: <span id="timeout_value">{{ scene.timeout }}</span></p>
+<script>
+var timeoutEndsInSecs = parseInt("{{ scene.timeout }}");
+setInterval(function() {
+    if (timeoutEndsInSecs <= 0) {
+        window.location.href = "{% url 'scene_view' scene.timeout_next_scene.id %}";
+    }
+    const el = document.getElementById("timeout_value");
+    el.innerHTML = timeoutEndsInSecs;
+    timeoutEndsInSecs--;
+}, 1000);
+</script>
+{% endif %}
