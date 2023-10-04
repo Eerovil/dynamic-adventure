@@ -23,6 +23,10 @@ class SceneView(View):
             if btn.visible_for_user(request.user)
         ]
         scene.handle_quest_progress(request.user)
+        scene.handle_button_effects(request.user)
+        player = request.user.player
+        player.previous_scene = scene
+        player.save()
 
         context = {
             'scene': scene,

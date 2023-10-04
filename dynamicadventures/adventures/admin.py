@@ -33,10 +33,27 @@ class QuestLineAdmin(admin.ModelAdmin):
     inlines = [QuestLineRowInline]
 
 
+class InventoryRowInline(admin.TabularInline):
+    model = models.InventoryRow
+    extra = 0
+
+
+class PlayerQuestProgressInline(admin.TabularInline):
+    model = models.PlayerQuestProgress
+    extra = 0
+
+
+class PlayerAdmin(admin.ModelAdmin):
+    inlines = [PlayerQuestProgressInline, InventoryRowInline]
+
+
 admin.site.register(models.Scene, SceneAdmin)
 admin.site.register(models.SceneButton)
-admin.site.register(models.Player)
+admin.site.register(models.Player, PlayerAdmin)
 admin.site.register(models.InventoryRow)
 admin.site.register(models.Item)
 admin.site.register(models.QuestLineRow)
 admin.site.register(models.QuestLine, QuestLineAdmin)
+admin.site.register(models.PlayerQuestProgress)
+admin.site.register(models.ShopInventoryRow)
+admin.site.register(models.ShopKeeper)

@@ -14,7 +14,7 @@ class Scene(models.Model):
     sound = models.FileField(upload_to='sounds/', null=True, blank=True)
     timeout = models.IntegerField(null=True, blank=True)
     timeout_next_scene = models.ForeignKey(
-        'Scene', on_delete=models.CASCADE,
+        'Scene', on_delete=models.SET_NULL,
         related_name='timeout_prev_scene', null=True, blank=True
     )
 
@@ -35,17 +35,27 @@ class Scene(models.Model):
             return
         questline_row.mark_as_complete(user)
 
+    def handle_button_effects(self, user):
+        if not user.player.previous_scene:
+            return
+        for btn in self.as_btn_next_scene.all():
+            if btn.scene == user.player.previous_scene:
+                btn.handle_side_effects(user)
+
 
 class SceneButton(models.Model):
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE)
     text = models.CharField(max_length=200)
     next_scene = models.ForeignKey(
-        Scene, on_delete=models.CASCADE, related_name='as_btn_next_scene', null=True, blank=True
+        Scene, on_delete=models.SET_NULL, related_name='as_btn_next_scene', null=True, blank=True
     )
     hp_change = models.IntegerField(null=True, blank=True)
-    item_add = models.ForeignKey('Item', on_delete=models.CASCADE, null=True, blank=True)
+    item_add = models.ForeignKey(
+        'Item', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='scene_button_add'
+    )
     item_remove = models.ForeignKey(
-        'Item', on_delete=models.CASCADE,
+        'Item', on_delete=models.SET_NULL,
         related_name='scene_button_remove', null=True, blank=True
     )
     image = models.ImageField(upload_to='images/', null=True, blank=True)
@@ -59,6 +69,22 @@ class SceneButton(models.Model):
         if len(quest_rows) == 0:
             return None
         return quest_rows[0]
+
+    def handle_side_effects(self, user):
+        if self.hp_change:
+            user.player.ship_health += self.hp_change
+            user.player.save()
+        if self.item_add:
+            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_add.name)
+            inventory_row.quantity += 1
+            inventory_row.save()
+        if self.item_remove:
+            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_remove.name)
+            inventory_row.quantity -= 1
+            if inventory_row.quantity <= 0:
+                inventory_row.delete()
+            else:
+                inventory_row.save()
 
     def visible_for_user(self, user):
         questline_row = self.questline_row
@@ -82,15 +108,15 @@ class SceneButton(models.Model):
 
 class ShopKeeper(models.Model):
     scene = models.ForeignKey(
-        Scene, on_delete=models.CASCADE,
+        Scene, on_delete=models.SET_NULL,
         related_name='shop_scene', null=True, blank=True
     )
     parent_scene = models.ForeignKey(
-        Scene, on_delete=models.CASCADE,
+        Scene, on_delete=models.SET_NULL,
         related_name='parent_scene_for_shop', null=True, blank=True
     )
     scene_button = models.ForeignKey(
-        SceneButton, on_delete=models.CASCADE,
+        SceneButton, on_delete=models.SET_NULL,
         related_name='shop_scene_button', null=True, blank=True,
         help_text='SceneButton to add to parent_scene which will show "scene"',
     )
@@ -104,39 +130,50 @@ class ShopInventoryRow(models.Model):
 
 class Player(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='player')
+    previous_scene = models.ForeignKey(
+        Scene, on_delete=models.SET_NULL,
+        related_name='previous_scene_for_player', null=True, blank=True
+    )
     ship_health = models.IntegerField(default=100)
     ship_engine_item = models.ForeignKey(
-        'Item', on_delete=models.CASCADE, null=True, blank=True,
+        'Item', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='ship_engine_item'
     )
     ship_shield_item = models.ForeignKey(
-        'Item', on_delete=models.CASCADE, null=True, blank=True,
+        'Item', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='ship_shield_item'
     )
     ship_weapon_item = models.ForeignKey(
-        'Item', on_delete=models.CASCADE, null=True, blank=True,
+        'Item', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='ship_weapon_item'
     )
     player_hat_item = models.ForeignKey(
-        'Item', on_delete=models.CASCADE, null=True, blank=True,
+        'Item', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='player_hat_item'
     )
     player_shirt_item = models.ForeignKey(
-        'Item', on_delete=models.CASCADE, null=True, blank=True,
+        'Item', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='player_shirt_item'
     )
+
+    def __str__(self):
+        return self.user.username
 
 
 class InventoryRow(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     item = models.CharField(max_length=200)
-    quantity = models.IntegerField(default=1)
+    quantity = models.IntegerField(default=0)
 
 
 class Item(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
+    quest_item = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class PlayerQuestProgress(models.Model):
@@ -146,12 +183,15 @@ class PlayerQuestProgress(models.Model):
     )
     completed = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f'{self.player} - {self.quest_row}'
+
 
 class QuestLineRow(models.Model):
     sort_order = models.IntegerField(default=1)
     questline = models.ForeignKey('QuestLine', on_delete=models.CASCADE)
     scene_button = models.ForeignKey(
-        SceneButton, on_delete=models.CASCADE,
+        SceneButton, on_delete=models.SET_NULL,
         related_name='scene_button_for_quest', null=True, blank=True,
         help_text='SceneButton to add to parent scene which will show "scene"',
     )
@@ -162,7 +202,16 @@ class QuestLineRow(models.Model):
     def __str__(self):
         if not self.scene_button:
             return f'{self.questline.name} - No scene button'
-        return f'{self.questline.name} - {self.scene_button.scene.title}'
+        return f'{self.sort_order}: {self.questline.name} - {self.scene_button.text}'
+
+    def save(self, *args, **kwargs):
+        siblings = self.questline.questlinerow_set.all()
+        if self.id:
+            siblings = siblings.exclude(id=self.id)
+        if not self.sort_order or siblings.filter(sort_order=self.sort_order).exists():
+            max_sort_order = siblings.aggregate(models.Max('sort_order'))['sort_order__max']
+            self.sort_order = max_sort_order + 1
+        super().save(*args, **kwargs)
 
     def mark_as_complete(self, user):
         next_quest_row = self.questline.questlinerow_set.filter(sort_order=self.sort_order + 1).first()
