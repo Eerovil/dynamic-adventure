@@ -115,17 +115,16 @@ class SceneButton(models.Model):
         questline_row = self.questline_row
         if not questline_row:
             return True
-        progress_sort_order = 0
+        progress_sort_order = 1
         for progress in user.player.playerquestprogress_set.all():
             if progress.quest_row.questline_id == questline_row.questline_id:
                 progress_sort_order = progress.quest_row.sort_order
                 if progress.completed:
                     return False
 
-        if not progress_sort_order and questline_row.sort_order == 1:
-            # This is the first quest in the questline
-            return True
-        
+        if questline_row.sort_order > progress_sort_order:
+            return False
+
         if questline_row.show_until and progress_sort_order > questline_row.show_until:
             return False
 
