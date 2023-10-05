@@ -1,7 +1,7 @@
 {% extends 'adventures/scene.html' %}
 {% block description %}
 {{ block.super }}
-<p>Moottori: {{ player.ship_engine_item }}</p>
-<p>Aseet: {{ player.ship_weapon_item }}</p>
-<p>Kilpi: {{ player.ship_shield_item }}</p>
+<p class="read-aloud">Moottori: {{ player.ship_engine_item }}</p>
+<p class="read-aloud">Aseet: {{ player.ship_weapon_item }}</p>
+<p class="read-aloud">Kilpi: {{ player.ship_shield_item }}</p>
 {% endblock %}

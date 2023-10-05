@@ -4,12 +4,14 @@
     {% if back_scene %}
     <a class="button" href="{% url 'scene_view' back_scene %}">Back</a>
     {% endif %}
-    <h1>{{ scene.title }}</h1>
+    {% block title %}
+    <h1 class="read-aloud">{{ scene.title }}</h1>
+    {% endblock %}
     {% block description %}
     {% if description_override %}
-    <p>{{ description_override }}</p>
+    <p class="read-aloud">{{ description_override }}</p>
     {% else %}
-    <p>{{ scene.description }}</p>
+    <p class="read-aloud">{{ scene.description }}</p>
     {% endif %}
     {% endblock %}
 </div>
@@ -64,4 +66,36 @@
     border: 0.2rem solid #4CAF50;
 }
 </style>
+<script>
+let context = null;
+
+const speak = (text) => {
+  console.log(text);
+  const utter = new SpeechSynthesisUtterance();
+  utter.lang = 'fi-FI';
+  utter.text = text;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+}
+
+const speakAloud = (text) => {
+  if (window.speechSynthesis) {
+    speak(text);
+  }
+}
+
+const speakElements = document.getElementsByClassName("read-aloud");
+let totalText = "";
+for (let i = 0; i < speakElements.length; i++) {
+    if (!speakElements[i].textContent.trim()) {
+        continue;
+    }
+    totalText += speakElements[i].textContent;
+    totalText += ". ";
+}
+speakAloud(totalText);
+</script>
 {% endblock %}

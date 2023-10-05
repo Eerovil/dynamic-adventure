@@ -69,6 +69,8 @@ class SceneViewWithBack(SceneView):
             return {}
 
 class InventoryView(SceneViewWithBack):
+    template_name = 'adventures/inventory.html'
+
     def extra_context(self):
         ret = super().extra_context()
         if self.request.GET.get('item'):
