@@ -115,20 +115,17 @@ class SceneButton(models.Model):
         questline_row = self.questline_row
         if not questline_row:
             return True
-        progress_exists = False
+        progress_sort_order = 0
         for progress in user.player.playerquestprogress_set.all():
             if progress.quest_row.questline_id == questline_row.questline_id:
+                progress_sort_order = progress.quest_row.sort_order
                 if progress.completed:
                     return False
-        for progress in user.player.playerquestprogress_set.all():
-            if progress.quest_row.questline_id == questline_row.questline_id:
-                progress_exists = True
-                if progress.completed:
-                    return False
-            if progress.quest_row_id == questline_row.id:
-                return True
 
-        if not progress_exists and questline_row.sort_order == 1:
+        if questline_row.show_until and progress_sort_order >= questline_row.show_until:
+            return False
+
+        if not progress_sort_order and questline_row.sort_order == 1:
             # This is the first quest in the questline
             return True
         logger.info("User %s does not have access to scene button %s", user, self)
@@ -291,6 +288,10 @@ class PlayerQuestProgress(models.Model):
 class QuestLineRow(models.Model):
     sort_order = models.IntegerField(default=1)
     questline = models.ForeignKey('QuestLine', on_delete=models.CASCADE)
+    show_until = models.IntegerField(
+        'Näytä kunnes pelaaja on tehnyt kohdan X',
+        null=True, blank=True, default=1
+    )
     scene_button = models.ForeignKey(
         SceneButton, on_delete=models.SET_NULL,
         related_name='scene_button_for_quest', null=True, blank=True,
