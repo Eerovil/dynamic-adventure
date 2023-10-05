@@ -1,0 +1,26 @@
+{% extends 'adventures/scene.html' %}
+
+{% block description %}
+{{ block.super }}
+{% include 'adventures/apriltag.html' %}
+{% endblock %}
+
+{% block body %}
+{{ block.super }}
+<style>
+    #bottom-part {
+        display: none;
+    }
+</style>
+<script>
+
+    window.document.addEventListener('apriltag', function(event) {
+        const tag = event.detail;
+        // If it's not a number between 0 and 255, ignore it.
+        if (isNaN(tag) || parseInt(tag) < 0 || parseInt(tag) > 255) {
+            return;
+        }
+        window.location.href = `/adventure/apriltag/${tag}/`;
+    });
+</script>
+{% endblock %}

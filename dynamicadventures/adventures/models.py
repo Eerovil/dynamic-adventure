@@ -36,6 +36,7 @@ class Scene(models.Model):
     )
 
     is_menu = models.BooleanField(default=False)
+    apriltag = models.IntegerField(null=True, blank=True, unique=True)
 
     objects = SceneManager()
 
@@ -264,6 +265,12 @@ class Item(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def timeout_effect(self):
+        if not self.ship_part_level:
+            return 0
+        return self.ship_part_level * 2
 
 
 class PlayerQuestProgress(models.Model):

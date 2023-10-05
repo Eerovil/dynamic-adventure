@@ -37,7 +37,7 @@ class SceneView(View):
         player = request.user.player
         self.original_scene = player.previous_scene
         # If this class is not SceneView, then do not save previous scene
-        if self.__class__ == SceneView:
+        if not scene.is_menu:
             player.previous_scene = scene
             player.save()
 
@@ -79,7 +79,7 @@ class InventoryView(SceneViewWithBack):
         return ret
 
     def get(self, request):
-        scene = get_object_or_404(m.Scene, slug='inventory')
+        scene = m.Scene.objects.get_inventory_scene()
         return super().get(request, scene_id=scene.pk)
 
     def scene_buttons_override(self, request, scene):
@@ -90,7 +90,7 @@ class ShipView(SceneViewWithBack):
     template_name = 'adventures/ship.html'
 
     def get(self, request):
-        scene = get_object_or_404(m.Scene, slug='ship')
+        scene = m.Scene.objects.get_ship_scene()
         if self.request.GET.get('item-built'):
             item = get_object_or_404(m.Item, pk=self.request.GET.get('item-built'))
             # Player has built an item
@@ -105,7 +105,21 @@ class PlayerView(SceneViewWithBack):
     template_name = 'adventures/player.html'
 
     def get(self, request):
-        scene = get_object_or_404(m.Scene, slug='player')
+        scene = m.Scene.objects.get_player_scene()
+        return super().get(request, scene_id=scene.pk)
+
+
+class FlyView(SceneViewWithBack):
+    template_name = 'adventures/fly.html'
+
+    def get(self, request):
+        scene = m.Scene.objects.get_fly_scene()
+        return super().get(request, scene_id=scene.pk)
+
+
+class AprilTagView(SceneView):
+    def get(self, request, tag_id):
+        scene = m.Scene.objects.get_by_apriltag(tag_id)
         return super().get(request, scene_id=scene.pk)
 
 

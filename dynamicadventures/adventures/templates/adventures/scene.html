@@ -11,7 +11,7 @@
     {% if description_override %}
     <p class="read-aloud">{{ description_override }}</p>
     {% else %}
-    <p class="read-aloud">{{ scene.description }}</p>
+    <p class="read-aloud">{{ scene.text|default:"" }}</p>
     {% endif %}
     {% endblock %}
 </div>

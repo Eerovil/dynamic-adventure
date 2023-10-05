@@ -10,4 +10,6 @@ urlpatterns = [
     path('inventory/', views.InventoryView.as_view(), name='inventory_view'),
     path('ship/', views.ShipView.as_view(), name='ship_view'),
     path('player/', views.PlayerView.as_view(), name='player_view'),
+    path('fly/', views.FlyView.as_view(), name='fly_view'),
+    path('apriltag/<int:tag_id>/', views.AprilTagView.as_view(), name='apriltag_view'),
 ]
