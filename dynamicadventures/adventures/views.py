@@ -26,13 +26,13 @@ class SceneView(View):
             return redirect('login_view')
         scene = get_object_or_404(m.Scene, pk=scene_id)
         scene_buttons = self.scene_buttons_override(request, scene)
+        scene.handle_quest_progress(request.user)
         if not scene_buttons:
             scene_buttons = [
                 btn for btn in
                 m.SceneButton.objects.filter(scene=scene)
                 if btn.visible_for_user(request.user)
             ]
-        scene.handle_quest_progress(request.user)
         scene.handle_button_effects(request.user)
         player = request.user.player
         self.original_scene = player.previous_scene
