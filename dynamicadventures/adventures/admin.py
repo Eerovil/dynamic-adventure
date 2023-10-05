@@ -12,7 +12,9 @@ class SceneButtonInline(admin.TabularInline):
 
 
 class SceneAdmin(admin.ModelAdmin):
-    list_display = ('title', 'text', 'image', 'show_hp', 'sound', 'timeout', 'timeout_next_scene')
+    list_display = (
+        'title', 'is_menu', 'text', 'image', 'show_hp', 'sound', 'timeout', 'timeout_next_scene'
+    )
     inlines = [SceneButtonInline]
 
 
