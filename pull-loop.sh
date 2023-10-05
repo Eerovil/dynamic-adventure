@@ -20,5 +20,6 @@ while true; do
     git reset --hard origin/$BRANCH
     
     # Sleep for 1 hour (3600 seconds) before the next pull
+    .venv/bin/python3 dynamicadventures/manage.py migrate
     sleep 5
 done
