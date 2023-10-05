@@ -139,8 +139,6 @@ class LoginView(View):
             except m.Player.DoesNotExist:
                 player = m.Player(user=user)
                 player.save()
-            for scene in m.Scene.objects.all():
-                if scene.slug in ['inventory', 'ship', 'player']:
-                    continue
-                return redirect('scene_view', scene_id=scene.pk)
+            scene = m.Scene.objects.get_initial_scene()
+            return redirect('scene_view', scene_id=scene.pk)
         return render(request, 'adventures/login.html')

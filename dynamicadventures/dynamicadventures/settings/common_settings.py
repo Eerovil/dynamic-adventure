@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-fkzyq#3rmii1+togx&k+^s_kjj9s%ss5te0+$*k2n)vot)d9#8
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    "localhost",
     "ahdintie.duckdns.org",
 ]
 
@@ -118,7 +119,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "adventure/static/"
+CSRF_TRUSTED_ORIGINS = ['https://ahdintie.duckdns.org']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

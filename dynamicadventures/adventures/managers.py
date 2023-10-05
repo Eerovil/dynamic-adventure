@@ -2,6 +2,12 @@ from django.db import models
 
 
 class SceneManager(models.Manager):
+    def get_initial_scene(self):
+        scene = self.filter(is_menu=False).first()
+        if not scene:
+            scene = self.get_target_not_found_scene()
+        return scene
+
     def get_inventory_scene(self):
         scene, created = self.get_or_create(slug='inventory')
         scene.is_menu = True
