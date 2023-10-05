@@ -122,14 +122,14 @@ class SceneButton(models.Model):
                 if progress.completed:
                     return False
 
-        if questline_row.show_until and progress_sort_order >= questline_row.show_until:
-            return False
-
         if not progress_sort_order and questline_row.sort_order == 1:
             # This is the first quest in the questline
             return True
-        logger.info("User %s does not have access to scene button %s", user, self)
-        return False
+        
+        if questline_row.show_until and progress_sort_order >= questline_row.show_until:
+            return False
+
+        return True
 
 
 class ShopKeeper(models.Model):
