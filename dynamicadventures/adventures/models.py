@@ -126,7 +126,7 @@ class SceneButton(models.Model):
             # This is the first quest in the questline
             return True
         
-        if questline_row.show_until and progress_sort_order >= questline_row.show_until:
+        if questline_row.show_until and progress_sort_order > questline_row.show_until:
             return False
 
         return True
