@@ -117,8 +117,9 @@ class SceneButton(models.Model):
             return True
         progress_exists = False
         for progress in user.player.playerquestprogress_set.all():
-            if progress.completed:
-                return False
+            if progress.quest_row.questline_id == questline_row.questline_id:
+                if progress.completed:
+                    return False
         for progress in user.player.playerquestprogress_set.all():
             if progress.quest_row.questline_id == questline_row.questline_id:
                 progress_exists = True
