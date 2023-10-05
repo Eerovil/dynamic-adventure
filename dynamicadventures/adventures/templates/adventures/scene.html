@@ -5,20 +5,18 @@
     <a class="button" href="{% url 'scene_view' back_scene %}">Back</a>
     {% endif %}
     <h1>{{ scene.title }}</h1>
+    {% block description %}
     {% if description_override %}
     <p>{{ description_override }}</p>
     {% else %}
     <p>{{ scene.description }}</p>
     {% endif %}
+    {% endblock %}
 </div>
 <div id="bottom-part">
     <div id="button-container">
     {% for scene_button in scene_buttons %}
-        {% if scene_button.next_scene_url %}
-        <a class="button" href="{{ scene_button.next_scene_url }}">{{ scene_button.text }}</a>
-        {% else %}
-        <a class="button" href="{% url 'scene_view' scene_button.next_scene.id %}">{{ scene_button.text }}</a>
-        {% endif %}
+        <a class="button" href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}">{{ scene_button.text }}</a>
     {% endfor %}
     </div>
 
@@ -28,7 +26,8 @@
     var timeoutEndsInSecs = parseInt("{{ scene.timeout }}");
     setInterval(function() {
         if (timeoutEndsInSecs <= 0) {
-            window.location.href = "{% url 'scene_view' scene.timeout_next_scene.id %}";
+            const queryParams = new URLSearchParams(window.location.search);
+            window.location.href = "{{ scene.timeout_next_scene.get_url }}" + "?" + queryParams.toString();
         }
         const el = document.getElementById("timeout_bar");
         el.value = timeoutEndsInSecs;

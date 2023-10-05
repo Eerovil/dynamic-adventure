@@ -1,0 +1,6 @@
+{% extends 'adventures/scene.html' %}
+{% block description %}
+{{ block.super }}
+<p>Hattu: {{ player.player_hat_item }}</p>
+<p>Puku: {{ player.player_shirt_item }}</p>
+{% endblock %}

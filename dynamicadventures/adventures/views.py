@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class SceneView(View):
+    template_name = 'adventures/scene.html'
+
     def extra_context(self):
         return {}
 
@@ -39,12 +41,22 @@ class SceneView(View):
             player.previous_scene = scene
             player.save()
 
+        if scene.timeout:
+            # If scene has timeout, reduce it if its affected by player's items
+            if scene.timeout_type == m.Scene.TIMEOUT_TYPE_ENGINE:
+                if player.ship_engine_item:
+                    scene.timeout -= player.ship_engine_item.timeout_effect
+            elif scene.timeout_type == m.Scene.TIMEOUT_TYPE_WEAPON:
+                if player.ship_weapon_item:
+                    scene.timeout -= player.ship_weapon_item.timeout_effect
+
         context = {
+            'player': player,
             'scene': scene,
             'scene_buttons': scene_buttons,
         }
         context.update(self.extra_context())
-        return render(request, 'adventures/scene.html', context)
+        return render(request, self.template_name, context)
 
 
 class SceneViewWithBack(SceneView):
@@ -73,12 +85,23 @@ class InventoryView(SceneViewWithBack):
 
 
 class ShipView(SceneViewWithBack):
+    template_name = 'adventures/ship.html'
+
     def get(self, request):
         scene = get_object_or_404(m.Scene, slug='ship')
+        if self.request.GET.get('item-built'):
+            item = get_object_or_404(m.Item, pk=self.request.GET.get('item-built'))
+            # Player has built an item
+            request.user.player.build_item(item)
         return super().get(request, scene_id=scene.pk)
+
+    def scene_buttons_override(self, request, scene):
+        return request.user.player.ship_parts_as_buttons(scene)
 
 
 class PlayerView(SceneViewWithBack):
+    template_name = 'adventures/player.html'
+
     def get(self, request):
         scene = get_object_or_404(m.Scene, slug='player')
         return super().get(request, scene_id=scene.pk)

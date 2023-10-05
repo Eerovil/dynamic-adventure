@@ -1,5 +1,8 @@
 from django.db import models
 
+
+from .managers import SceneManager
+
 # Create your models here.
 
 import logging
@@ -7,6 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 class Scene(models.Model):
+    TIMEOUT_TYPE_ENGINE = 'engine'
+    TIMEOUT_TYPE_WEAPON = 'weapon'
+    TIMEOUT_TYPE_BUILDING = 'building'
+
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
@@ -14,13 +21,36 @@ class Scene(models.Model):
     show_hp = models.BooleanField(default=False)
     sound = models.FileField(upload_to='sounds/', null=True, blank=True)
     timeout = models.IntegerField(null=True, blank=True)
+    timeout_type = models.CharField(
+        choices=[
+            (TIMEOUT_TYPE_ENGINE, 'Engine'),
+            (TIMEOUT_TYPE_WEAPON, 'Weapon'),
+            (TIMEOUT_TYPE_BUILDING, 'Building'),
+        ], max_length=200,
+        null=True, blank=True,
+        default=TIMEOUT_TYPE_BUILDING,
+    )
     timeout_next_scene = models.ForeignKey(
         'Scene', on_delete=models.SET_NULL,
         related_name='timeout_prev_scene', null=True, blank=True
     )
 
+    is_menu = models.BooleanField(default=False)
+
+    objects = SceneManager()
+
     def __str__(self):
         return self.title
+
+    @property
+    def get_url(self):
+        if self.slug == 'inventory':
+            return '/adventure/inventory/'
+        if self.slug == 'ship':
+            return '/adventure/ship/'
+        if self.slug == 'player':
+            return '/adventure/player/'
+        return '/adventure/scene/{}/'.format(self.id)
 
     @property
     def questline_row(self):
@@ -76,16 +106,9 @@ class SceneButton(models.Model):
             user.player.ship_health += self.hp_change
             user.player.save()
         if self.item_add:
-            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_add)
-            inventory_row.quantity += 1
-            inventory_row.save()
+            user.player.modify_inventory(self.item_add, 1)
         if self.item_remove:
-            inventory_row, created = user.player.inventoryrow_set.get_or_create(item=self.item_remove)
-            inventory_row.quantity -= 1
-            if inventory_row.quantity <= 0:
-                inventory_row.delete()
-            else:
-                inventory_row.save()
+            user.player.modify_inventory(self.item_remove, -1)
 
     def visible_for_user(self, user):
         questline_row = self.questline_row
@@ -160,6 +183,15 @@ class Player(models.Model):
     def __str__(self):
         return self.user.username
 
+    def modify_inventory(self, item, quantity_diff):
+        inventory_row, created = self.inventoryrow_set.get_or_create(item=item)
+        inventory_row.quantity += quantity_diff
+        logger.info("Modifying inventory for %s: %s x %s", self, item, quantity_diff)
+        if inventory_row.quantity <= 0:
+            inventory_row.delete()
+        else:
+            inventory_row.save()
+
     def inventory_as_buttons(self, current_scene):
         ret = []
         for row in self.inventoryrow_set.all():
@@ -169,10 +201,45 @@ class Player(models.Model):
                 next_scene=current_scene,
                 scene=current_scene,
             )
-            button.next_scene_url = '/adventure/inventory/?item={}'.format(row.item.id)
+            button.query_params = '?item={}'.format(row.item.id)
             ret.append(button)
         return ret
 
+    def ship_parts_as_buttons(self, current_scene):
+        ret = []
+        for row in self.inventoryrow_set.all():
+            if not row.item.ship_part_type:
+                continue
+            button = SceneButton(
+                text=f'{row.item} x{row.quantity}',
+                image=row.item.image,
+                next_scene=Scene.objects.get_ship_building_scene(),
+                scene=current_scene,
+            )
+            button.query_params = '?item-built={}'.format(row.item.id)
+            ret.append(button)
+        return ret
+
+    def build_item(self, item):
+        logger.info("Building item %s for %s", item, self)
+        if not item.ship_part_type:
+            return
+        old_item = None
+        if item.ship_part_type == 'engine':
+            old_item = self.ship_engine_item
+            self.ship_engine_item = item
+        elif item.ship_part_type == 'shield':
+            old_item = self.ship_shield_item
+            self.ship_shield_item = item
+        elif item.ship_part_type == 'weapon':
+            old_item = self.ship_weapon_item
+            self.ship_weapon_item = item
+
+        # Remove item from inventory
+        self.modify_inventory(item, -1)
+        if old_item:
+            self.modify_inventory(old_item, 1)
+        self.save()
 
 class InventoryRow(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
@@ -185,6 +252,15 @@ class Item(models.Model):
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
     quest_item = models.BooleanField(default=False)
+    ship_part_type = models.CharField(
+        choices=[
+            ('engine', 'Engine'),
+            ('shield', 'Shield'),
+            ('weapon', 'Weapon'),
+        ], max_length=200,
+        null=True, blank=True,
+    )
+    ship_part_level = models.IntegerField(null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name
