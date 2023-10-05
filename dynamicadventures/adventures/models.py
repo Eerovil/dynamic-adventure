@@ -321,7 +321,13 @@ class QuestLineRow(models.Model):
         if not next_quest_row:
             next_quest_row = self
             complete = True
-        progress = PlayerQuestProgress.objects.get_or_create(player=user.player, quest_row=self)[0]
+        progress = PlayerQuestProgress.objects.filter(
+            player=user.player, quest_row__questline=self.questline
+        ).first()
+        if not progress:
+            progress = PlayerQuestProgress.objects.create(
+                player=user.player, quest_row=self
+            )
         progress.quest_row = next_quest_row
         progress.completed = complete
         progress.save()
