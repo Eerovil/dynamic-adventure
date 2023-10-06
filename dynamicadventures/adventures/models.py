@@ -327,6 +327,9 @@ class QuestLineRow(models.Model):
             progress = PlayerQuestProgress.objects.create(
                 player=user.player, quest_row=self
             )
+        if self.sort_order > progress.quest_row.sort_order:
+            # Player is ahead of this part of the quest
+            return
         progress.quest_row = next_quest_row
         progress.completed = complete
         progress.save()
