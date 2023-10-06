@@ -1,5 +1,8 @@
 from django.db import models
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class SceneManager(models.Manager):
     def get_initial_scene(self):
@@ -59,6 +62,6 @@ class SceneManager(models.Manager):
     def get_by_apriltag(self, tag_id):
         scene = self.filter(apriltag=tag_id).first()
         if not scene:
+            logger.info("Apriltag %s not found", tag_id)
             scene = self.get_target_not_found_scene()
-            scene.additional_info = f'Apriltag {tag_id}'
         return scene
