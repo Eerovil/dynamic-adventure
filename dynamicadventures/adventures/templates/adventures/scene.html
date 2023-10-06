@@ -1,5 +1,10 @@
 {% extends 'adventures/base.html' %}
 {% block body %}
+{% if scene.image %}
+<div id="img-part">
+    <img src="{{ scene.image.url }}" alt="{{ scene.image.name }}">
+</div>
+{% endif %}
 <div id="top-part">
     {% if back_scene %}
     <a class="button" href="{% url 'scene_view' back_scene %}">Back</a>
@@ -42,10 +47,21 @@
     {% endif %}
 </div>
 <style>
-#top-part {
+#img-part {
     padding: 1rem;
+    padding-bottom: 0.5rem;
     text-align: center;
-    height: 40vh;
+}
+#img-part img {
+    max-height: 150px;
+}
+#top-part {
+    padding: 0rem 0.5rem;
+    text-align: center;
+    height: 25vh;
+}
+#top-part h1 {
+    margin: 0;
 }
 #bottom-part {
     padding: 1rem;
@@ -59,13 +75,13 @@
     align-items: center;
 }
 .button {
-    padding: 1rem;
+    padding: 0.3rem;
     margin: 5px;
     background-color: #4CAF50;
     color: white;
     border-radius: 0.2rem;
     text-decoration: none;
-    font-size: 2rem;
+    font-size: 25px;
     border: 0.2rem solid #4CAF50;
 }
 </style>
