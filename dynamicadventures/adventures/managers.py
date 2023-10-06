@@ -50,7 +50,7 @@ class SceneManager(models.Manager):
         scene, created = self.get_or_create(slug='target_not_found')
         scene.title = 'Määränpäätä ei löytynyt'
         scene.is_menu = False
-        scene.description = (
+        scene.text = (
             'Olet ajelehtinut avaruudessa ilman määränpäätä. Löydä jokin määränpää.'
         )
         scene.save()
@@ -60,4 +60,5 @@ class SceneManager(models.Manager):
         scene = self.filter(apriltag=tag_id).first()
         if not scene:
             scene = self.get_target_not_found_scene()
+            scene.additional_info = f'Apriltag {tag_id}'
         return scene
