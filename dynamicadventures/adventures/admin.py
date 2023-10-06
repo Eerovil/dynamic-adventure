@@ -11,11 +11,17 @@ class SceneButtonInline(admin.TabularInline):
     extra = 1
 
 
+class SceneButtonFromInline(admin.TabularInline):
+    fk_name = 'next_scene'
+    model = models.SceneButton
+    extra = 1
+
+
 class SceneAdmin(admin.ModelAdmin):
     list_display = (
         'title', 'is_menu', 'text', 'image', 'show_hp', 'sound', 'timeout', 'timeout_next_scene'
     )
-    inlines = [SceneButtonInline]
+    inlines = [SceneButtonInline, SceneButtonFromInline]
 
 
 class QuestLineRowSceneButtonInline(admin.TabularInline):
@@ -49,8 +55,18 @@ class PlayerAdmin(admin.ModelAdmin):
     inlines = [PlayerQuestProgressInline, InventoryRowInline]
 
 
+class SceneButtonAdmin(admin.ModelAdmin):
+    list_display = [
+        'scene',
+        'next_scene',
+        'text',
+        'item_add',
+        'item_remove',
+    ]
+
+
 admin.site.register(models.Scene, SceneAdmin)
-admin.site.register(models.SceneButton)
+admin.site.register(models.SceneButton, SceneButtonAdmin)
 admin.site.register(models.Player, PlayerAdmin)
 admin.site.register(models.InventoryRow)
 admin.site.register(models.Item)
