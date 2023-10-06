@@ -7,10 +7,10 @@
     {% block title %}
     <h1 class="read-aloud">{{ scene.title }}</h1>
     {% endblock %}
+    {% block description %}
     {% if scene.additional_info %}
     <p>{{ scene.additional_info }}</p>
     {% endif %}
-    {% block description %}
     {% if description_override %}
     <p class="read-aloud">{{ description_override }}</p>
     {% else %}
