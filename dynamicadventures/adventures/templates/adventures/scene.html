@@ -1,14 +1,14 @@
 {% extends 'adventures/base.html' %}
 {% block body %}
+{% if back_scene %}
+<a class="button" href="{% url 'scene_view' back_scene %}">Pois</a>
+{% endif %}
 {% if scene.image %}
 <div id="img-part">
     <img src="{{ scene.image.url }}" alt="{{ scene.image.name }}">
 </div>
 {% endif %}
 <div id="top-part">
-    {% if back_scene %}
-    <a class="button" href="{% url 'scene_view' back_scene %}">Back</a>
-    {% endif %}
     {% block title %}
     <h1 class="read-aloud">{{ scene.title }}</h1>
     {% endblock %}
