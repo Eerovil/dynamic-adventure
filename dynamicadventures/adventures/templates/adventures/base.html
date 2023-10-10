@@ -10,10 +10,10 @@
 {% endblock %}
 {% block lastpart %}
 <div id="last-part">
-<a class="last-button speak-btn" href="/adventure/inventory">INV</a>
-<a class="last-button speak-btn" href="/adventure/ship">SHP</a>
-<a class="last-button speak-btn" href="/adventure/player">PLR</a>
-<a class="last-button speak-btn" href="/adventure/fly">FLY</a>
+<a class="last-button speak-btn" data-speak-text="Reppu" href="/adventure/inventory">INV</a>
+<a class="last-button speak-btn" data-speak-text="Alus" href="/adventure/ship">SHP</a>
+<a class="last-button speak-btn" data-speak-text="Ukkeli" href="/adventure/player">PLR</a>
+<a class="last-button speak-btn" data-speak-text="Lennä" href="/adventure/fly">FLY</a>
 </div>
 {% endblock %}
 <style>
@@ -68,7 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 event.preventDefault();
 
                 // Call window.speak on the button's text
-                window.speak(btn.textContent || btn.innerText);
+                const speakText = btn.getAttribute('data-speak-text');
+                window.speak(speakText || btn.innerText);
 
                 // Set this button as the last clicked
                 lastClickedButton = btn;
