@@ -4,16 +4,24 @@
 <link rel="icon" href="/adventure/static/favicon-192x192.png" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="manifest" href="/adventure/static/manifest.json">
+<style>
+HTML {
+    overscroll-behavior: none;
+}
+BODY {
+    overscroll-behavior-y: contain;
+}
+</style>
 </head>
 <body>
 {% block body %}
 {% endblock %}
 {% block lastpart %}
 <div id="last-part">
-<a class="last-button speak-btn" data-speak-text="Reppu" href="/adventure/inventory">INV</a>
-<a class="last-button speak-btn" data-speak-text="Alus" href="/adventure/ship">SHP</a>
-<a class="last-button speak-btn" data-speak-text="Ukkeli" href="/adventure/player">PLR</a>
-<a class="last-button speak-btn" data-speak-text="Lennä" href="/adventure/fly">FLY</a>
+<button class="last-button speak-btn disableable-button" data-speak-text="Reppu" href="/adventure/inventory">INV</button>
+<button class="last-button speak-btn disableable-button" data-speak-text="Alus" href="/adventure/ship">SHP</button>
+<button class="last-button speak-btn disableable-button" data-speak-text="Ukkeli" href="/adventure/player">PLR</button>
+<button class="last-button speak-btn disableable-button" data-speak-text="Lennä" href="/adventure/fly">FLY</button>
 </div>
 {% endblock %}
 <style>
@@ -56,6 +64,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.speak-btn').forEach(btn => {
         btn.addEventListener('click', function(event) {
+            const element = event.target;
+            if (element.classList.contains('disabled-button')) {
+                event.preventDefault();
+                return;
+            }
             // Reset style of the previously clicked button (if any)
             if (lastClickedButton) {
                 lastClickedButton.style.background = '';
@@ -80,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Allow the link to be followed
                 lastClickedButton = null;
+                window.location.href = btn.getAttribute('href');
             }
         });
     });

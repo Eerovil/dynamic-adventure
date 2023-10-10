@@ -1,7 +1,7 @@
 {% extends 'adventures/base.html' %}
 {% block body %}
 {% if back_scene %}
-<a class="button" href="{% url 'scene_view' back_scene %}">Pois</a>
+<a class="button disableable-button" href="{% url 'scene_view' back_scene %}">Pois</a>
 {% endif %}
 {% if scene.image %}
 <div id="img-part">
@@ -26,7 +26,7 @@
 <div id="bottom-part">
     <div id="button-container">
     {% for scene_button in scene_buttons %}
-        <a class="button speak-btn" href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}">{{ scene_button.text }}</a>
+        <button class="button speak-btn disableable-button" href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}">{{ scene_button.text }}</button>
     {% endfor %}
     </div>
 
@@ -84,17 +84,35 @@
     font-size: 25px;
     border: 0.2rem solid #4CAF50;
 }
+.disabled-button {
+    background-color: #555 !important;
+    border-color: #555 !important;
+    cursor: not-allowed !important;
+}
 </style>
 <script>
 let context = null;
 
+window.utterances = [];
 const speak = (text) => {
-  console.log(text);
-  const utter = new SpeechSynthesisUtterance();
-  utter.lang = 'fi-FI';
-  utter.text = text;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utter);
+    console.log(text);
+    const utter = new SpeechSynthesisUtterance();
+    utter.lang = 'fi-FI';
+    utter.text = text;
+    window.utterances.push(utter);
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utter);
+    return new Promise(resolve => {
+        console.log("onend")
+        utter.onend = () => {
+            console.log("resolver")
+            resolve();
+        };
+        setTimeout(() => {
+            console.log("timeout")
+            resolve();
+        }, 5000);
+    });
 }
 if (window.speechSynthesis) {
   speechSynthesis.getVoices();
@@ -103,8 +121,9 @@ window.speak = speak;
 
 const speakAloud = (text) => {
   if (window.speechSynthesis) {
-    speak(text);
+    return speak(text);
   }
+  return Promise.resolve();
 }
 
 const speakElements = document.getElementsByClassName("read-aloud");
@@ -116,6 +135,34 @@ for (let i = 0; i < speakElements.length; i++) {
     totalText += speakElements[i].textContent;
     totalText += ". ";
 }
-speakAloud(totalText);
+if (totalText) {
+    totalText = totalText.trim();
+}
+if (totalText) {
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable all buttons until the text has been read aloud
+    const buttons = document.querySelectorAll(".disableable-button");
+
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].classList.add("disabled-button");
+        console.log(buttons[i]);
+    }
+    speakAloud(totalText).then(() => {
+        console.log("done");
+        const buttons = document.querySelectorAll(".disableable-button");
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("disabled-button");
+        }
+    });
+
+    document.querySelectorAll('.disableable-button').forEach(btn => {
+        btn.addEventListener('click', function(event) {
+            if (btn.classList.contains("disabled-button")) {
+                event.preventDefault();
+            }
+        });
+    });
+});
+}
 </script>
 {% endblock %}

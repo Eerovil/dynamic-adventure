@@ -44,7 +44,7 @@ class SceneManager(models.Manager):
 
     def get_fly_scene(self):
         scene, created = self.get_or_create(slug='fly')
-        scene.title = 'Lennä'
+        scene.title = 'Piippaa koodi ja lennä toiselle planeetalle!'
         scene.is_menu = True
         scene.save()
         return scene
