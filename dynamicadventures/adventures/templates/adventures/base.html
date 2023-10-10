@@ -10,10 +10,10 @@
 {% endblock %}
 {% block lastpart %}
 <div id="last-part">
-<a class="last-button" href="/adventure/inventory">INV</a>
-<a class="last-button" href="/adventure/ship">SHP</a>
-<a class="last-button" href="/adventure/player">PLR</a>
-<a class="last-button" href="/adventure/fly">FLY</a>
+<a class="last-button speak-btn" href="/adventure/inventory">INV</a>
+<a class="last-button speak-btn" href="/adventure/ship">SHP</a>
+<a class="last-button speak-btn" href="/adventure/player">PLR</a>
+<a class="last-button speak-btn" href="/adventure/fly">FLY</a>
 </div>
 {% endblock %}
 <style>
@@ -46,5 +46,43 @@ body {
     color: #fff;
 }
 </style>
+<script>
+// Override all speak-btn click events so that user has to click on them twice to
+// actually follow the link. On the first click only call window.speak on the button text
+// and then wait for the second click to actually follow the link.
+document.addEventListener('DOMContentLoaded', function() {
+    // Variable to keep track of the last clicked button.
+    let lastClickedButton = null;
+
+    document.querySelectorAll('.speak-btn').forEach(btn => {
+        btn.addEventListener('click', function(event) {
+            // Reset style of the previously clicked button (if any)
+            if (lastClickedButton) {
+                lastClickedButton.style.background = '';
+                lastClickedButton.style.color = '';
+            }
+
+            // If this button was not the last clicked button
+            if (lastClickedButton !== btn) {
+                // Prevent default behavior
+                event.preventDefault();
+
+                // Call window.speak on the button's text
+                window.speak(btn.textContent || btn.innerText);
+
+                // Set this button as the last clicked
+                lastClickedButton = btn;
+
+                // Change the button's CSS to indicate it was clicked
+                btn.style.background = '#e0e0e0';  // Light gray background
+                btn.style.color = '#333';          // Darker text color
+            } else {
+                // Allow the link to be followed
+                lastClickedButton = null;
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

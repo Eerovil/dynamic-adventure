@@ -26,7 +26,7 @@
 <div id="bottom-part">
     <div id="button-container">
     {% for scene_button in scene_buttons %}
-        <a class="button" href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}">{{ scene_button.text }}</a>
+        <a class="button speak-btn" href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}">{{ scene_button.text }}</a>
     {% endfor %}
     </div>
 
@@ -99,6 +99,7 @@ const speak = (text) => {
 if (window.speechSynthesis) {
   speechSynthesis.getVoices();
 }
+window.speak = speak;
 
 const speakAloud = (text) => {
   if (window.speechSynthesis) {
