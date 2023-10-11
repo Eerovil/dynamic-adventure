@@ -35,13 +35,41 @@ class Scene(models.Model):
         related_name='timeout_prev_scene', null=True, blank=True
     )
 
+    is_root_scene = models.BooleanField(default=False, null=True)
     is_menu = models.BooleanField(default=False)
     apriltag = models.IntegerField(null=True, blank=True, unique=True)
 
     objects = SceneManager()
 
+    class Meta:
+        ordering = ('is_menu', '-is_root_scene')
+
     def __str__(self):
-        return self.title
+        parent_scenes = self.get_all_parent_scenes()
+        parents = ' -> '.join([scene.title for scene in parent_scenes])
+        if not parents:
+            return self.title
+        return f"{parents} -> {self.title}"
+
+    def get_all_parent_scenes(self):
+        ret = []
+        checked_scene_ids = set()
+        last_scene = self
+        while True:
+            try:
+                if last_scene.is_root_scene:
+                    break
+                if last_scene.id in checked_scene_ids:
+                    break
+                checked_scene_ids.add(last_scene.id)
+                new_scene = last_scene.as_btn_next_scene.first().scene
+                # prepend to ret
+                ret.insert(0, new_scene)
+                last_scene = new_scene
+            except AttributeError:
+                # No parent scene
+                break
+        return ret
 
     @property
     def get_url(self):
@@ -93,7 +121,7 @@ class SceneButton(models.Model):
     image = models.ImageField(upload_to='images/', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.scene.title} - {self.text}"
+        return f"{self.scene}: {self.text}"
 
     @property
     def questline_row(self):
@@ -116,7 +144,10 @@ class SceneButton(models.Model):
         if not questline_row:
             return True
         progress_sort_order = 1
+        completed_questline_ids = set()
         for progress in user.player.playerquestprogress_set.all():
+            if progress.completed:
+                completed_questline_ids.add(progress.quest_row.questline_id)
             if progress.quest_row.questline_id == questline_row.questline_id:
                 progress_sort_order = progress.quest_row.sort_order
                 if progress.completed:
@@ -127,6 +158,11 @@ class SceneButton(models.Model):
 
         if questline_row.show_until and progress_sort_order > questline_row.show_until:
             return False
+
+        for required_questline in questline_row.questline.required_questlines.all():
+            if required_questline.id not in completed_questline_ids:
+                logger.info("Not showing %s because %s is not completed", self, required_questline)
+                return False
 
         return True
 

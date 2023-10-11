@@ -19,9 +19,10 @@ class SceneButtonFromInline(admin.TabularInline):
 
 class SceneAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'is_menu', 'text', 'image', 'show_hp', 'sound', 'timeout', 'timeout_next_scene'
+        '__str__', 'is_menu', 'is_root_scene', 'text', 'image', 'show_hp', 'sound', 'timeout', 'timeout_next_scene'
     )
     inlines = [SceneButtonInline, SceneButtonFromInline]
+    search_fields = ['title', 'text']
 
 
 class QuestLineRowSceneButtonInline(admin.TabularInline):
@@ -34,6 +35,7 @@ class QuestLineRowInline(admin.TabularInline):
     model = models.QuestLineRow
     extra = 1
     inlines = [QuestLineRowSceneButtonInline]
+    autocomplete_fields = ['scene_button']
 
 
 class QuestLineAdmin(admin.ModelAdmin):
@@ -63,13 +65,19 @@ class SceneButtonAdmin(admin.ModelAdmin):
         'item_add',
         'item_remove',
     ]
+    autocomplete_fields = ['scene', 'next_scene', 'item_add', 'item_remove']
+    search_fields = ['text', 'scene__title']
+
+
+class ItemAdmin(admin.ModelAdmin):
+    search_fields = ['name']
 
 
 admin.site.register(models.Scene, SceneAdmin)
 admin.site.register(models.SceneButton, SceneButtonAdmin)
 admin.site.register(models.Player, PlayerAdmin)
 admin.site.register(models.InventoryRow)
-admin.site.register(models.Item)
+admin.site.register(models.Item, ItemAdmin)
 admin.site.register(models.QuestLineRow)
 admin.site.register(models.QuestLine, QuestLineAdmin)
 admin.site.register(models.PlayerQuestProgress)
