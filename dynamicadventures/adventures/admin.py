@@ -21,6 +21,7 @@ class SceneAdmin(admin.ModelAdmin):
     list_display = (
         '__str__', 'is_menu', 'is_root_scene', 'text', 'image', 'show_hp', 'sound', 'timeout', 'timeout_next_scene'
     )
+    list_editable = ('is_menu', 'is_root_scene', 'text', 'timeout')
     inlines = [SceneButtonInline, SceneButtonFromInline]
     search_fields = ['title', 'text']
 
@@ -65,6 +66,7 @@ class SceneButtonAdmin(admin.ModelAdmin):
         'item_add',
         'item_remove',
     ]
+    list_editable = ['text']
     autocomplete_fields = ['scene', 'next_scene', 'item_add', 'item_remove']
     search_fields = ['text', 'scene__title']
 
