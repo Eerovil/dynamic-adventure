@@ -375,6 +375,8 @@ class QuestLine(models.Model):
     required_questlines = models.ManyToManyField(
         'self', blank=True,
         help_text='What questlines must be complete to make the questline available?',
+        symmetrical=False,
+        related_name='as_required_questline_for_questlines',
     )
     description = models.TextField(null=True, blank=True)
 
