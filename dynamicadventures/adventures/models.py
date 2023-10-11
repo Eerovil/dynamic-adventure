@@ -17,6 +17,8 @@ class Scene(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
+    voice_pitch = models.FloatField(null=True, blank=True, default=1)
+    voice_rate = models.FloatField(null=True, blank=True, default=1)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
     show_hp = models.BooleanField(default=False)
     sound = models.FileField(upload_to='sounds/', null=True, blank=True)

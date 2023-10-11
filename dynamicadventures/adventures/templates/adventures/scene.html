@@ -21,7 +21,7 @@
     {% if description_override %}
     <p class="read-aloud">{{ description_override }}</p>
     {% else %}
-    <p class="read-aloud">{{ scene.text|default:"" }}</p>
+    <p class="custom-voice">{{ scene.text|default:"" }}</p>
     {% endif %}
     {% endblock %}
 </div>
@@ -101,11 +101,13 @@
 let context = null;
 
 window.utterances = [];
-const speak = (text) => {
+const speak = (text, pitch=1, rate=1) => {
     console.log(text);
     const utter = new SpeechSynthesisUtterance();
     utter.lang = 'fi-FI';
     utter.text = text;
+    utter.pitch = pitch;
+    utter.rate = rate;
     window.utterances.push(utter);
     speechSynthesis.cancel();
     speechSynthesis.speak(utter);
@@ -126,9 +128,9 @@ if (window.speechSynthesis) {
 }
 window.speak = speak;
 
-const speakAloud = (text) => {
+const speakAloud = (text, pitch=1, rate=1) => {
   if (window.speechSynthesis) {
-    return speak(text);
+    return speak(text, pitch, rate);
   }
   return Promise.resolve();
 }
@@ -145,7 +147,20 @@ for (let i = 0; i < speakElements.length; i++) {
 if (totalText) {
     totalText = totalText.trim();
 }
-if (totalText) {
+
+const customSpeakEls = document.getElementsByClassName("custom-voice");
+let customVoiceText = "";
+for (let i = 0; i < customSpeakEls.length; i++) {
+    if (!customSpeakEls[i].textContent.trim()) {
+        continue;
+    }
+    customVoiceText += customSpeakEls[i].textContent;
+    customVoiceText += ". ";
+}
+if (customVoiceText) {
+    customVoiceText = customVoiceText.trim();
+}
+if (totalText || customVoiceText) {
 document.addEventListener('DOMContentLoaded', function() {
     // Disable all buttons until the text has been read aloud
     const buttons = document.querySelectorAll(".disableable-button");
@@ -155,6 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(buttons[i]);
     }
     speakAloud(totalText).then(() => {
+        return speakAloud(customVoiceText, {{ scene.voice_pitch }}, {{ scene.voice_rate }});
+    }).then(() => {
         console.log("done");
         const buttons = document.querySelectorAll(".disableable-button");
         for (let i = 0; i < buttons.length; i++) {
