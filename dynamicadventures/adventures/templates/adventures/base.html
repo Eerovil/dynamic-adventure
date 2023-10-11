@@ -1,3 +1,4 @@
+{% load my_tags %}
 <html>
 <head>
 <meta charset="UTF-8">
@@ -14,20 +15,27 @@ BODY {
 </style>
 </head>
 <body>
-{% block body %}
-{% endblock %}
 {% block lastpart %}
+{% get_menu_scenes as menu_scenes %}
 <div id="last-part">
-<button class="last-button speak-btn disableable-button" data-speak-text="Reppu" href="/adventure/inventory">INV</button>
-<button class="last-button speak-btn disableable-button" data-speak-text="Alus" href="/adventure/ship">SHP</button>
-<button class="last-button speak-btn disableable-button" data-speak-text="Ukkeli" href="/adventure/player">PLR</button>
-<button class="last-button speak-btn disableable-button" data-speak-text="Lennä" href="/adventure/fly">FLY</button>
+<button class="last-button button img-button speak-btn disableable-button" data-speak-text="Reppu" href="/adventure/inventory">
+    <span class="btn-image" style="background-image: url('{{ menu_scenes.inventory.image.url }}');"></span>
+</button>
+<button class="last-button button img-button speak-btn disableable-button" data-speak-text="Alus" href="/adventure/ship">
+    <span class="btn-image" style="background-image: url('{{ menu_scenes.ship.image.url }}');"></span>
+</button>
+<button class="last-button button img-button speak-btn disableable-button" data-speak-text="Ukkeli" href="/adventure/player">
+    <span class="btn-image" style="background-image: url('{{ menu_scenes.player.image.url }}');"></span>
+</button>
+<button class="last-button button img-button speak-btn disableable-button" data-speak-text="Lennä" href="/adventure/fly">
+    <span class="btn-image" style="background-image: url('{{ menu_scenes.fly.image.url }}');"></span>
+</button>
 </div>
+{% endblock %}
+{% block body %}
 {% endblock %}
 <style>
 #last-part {
-    position: fixed;
-    bottom: 4rem;
     text-align: center;
     display: flex;
     flex-direction: row;
@@ -38,13 +46,31 @@ BODY {
     width: 24vw;
     padding: 0.5rem 1rem;
     margin: 5px;
+    flex-grow: 1;;
+}
+.button, .img-button {
+    padding: 0.3rem;
+    margin: 5px;
     background-color: #4CAF50;
     color: white;
     border-radius: 0.2rem;
     text-decoration: none;
-    font-size: 1rem;
+    font-size: 25px;
     border: 0.2rem solid #4CAF50;
-    flex-grow: 1;
+    display: flex;
+    align-items: center; /* Vertically center the text and image */
+    justify-content: center; /* Horizontally center the text and image */
+}
+.btn-image {
+    width: 40px; 
+    height: 40px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-right: 10px; 
+}
+.last-button .btn-image {
+    margin-right: 0;
 }
 body {
     margin: 0;
@@ -52,6 +78,10 @@ body {
     font-family: sans-serif;
     background-color: #333;
     color: #fff;
+}
+body, html {
+    overflow: hidden;
+    height: 100%;
 }
 </style>
 <script>
@@ -98,6 +128,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+document.body.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+}, { passive: false });
 </script>
 </body>
 </html>

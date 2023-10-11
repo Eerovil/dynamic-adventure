@@ -25,9 +25,7 @@ const constraints = {
   video: {
     width: cameraInfo.img_size[0],
     height: cameraInfo.img_size[1],
-    facingMode: {
-      exact: 'environment'
-    }
+    facingMode: 'environment',
   }
 };
 

@@ -3,11 +3,13 @@
 {% if back_scene %}
 <a class="button disableable-button" href="{% url 'scene_view' back_scene %}">Pois</a>
 {% endif %}
+{% block scene_image %}
 {% if scene.image %}
 <div id="img-part">
     <img src="{{ scene.image.url }}" alt="{{ scene.image.name }}">
 </div>
 {% endif %}
+{% endblock %}
 <div id="top-part">
     {% block title %}
     <h1 class="read-aloud">{{ scene.title }}</h1>
@@ -26,7 +28,21 @@
 <div id="bottom-part">
     <div id="button-container">
     {% for scene_button in scene_buttons %}
-        <button class="button speak-btn disableable-button" href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}">{{ scene_button.text }}</button>
+        {% if scene_button.next_scene and scene_button.next_scene.image %}
+        <button
+            class="img-button speak-btn disableable-button"
+            href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}"
+        >
+            <span class="btn-image" style="background-image: url('{{ scene_button.next_scene.image.url }}');"></span>
+            <span class="btn-text">{{ scene_button.text }}</span>
+        </button>
+        {% else %}
+        <button
+            class="button speak-btn disableable-button"
+            href="{{ scene_button.next_scene.get_url }}{{ scene_button.query_params }}">
+            {{ scene_button.text }}
+        </button>
+        {% endif %}
     {% endfor %}
     </div>
 
@@ -74,16 +90,7 @@
     justify-content: center;
     align-items: center;
 }
-.button {
-    padding: 0.3rem;
-    margin: 5px;
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 0.2rem;
-    text-decoration: none;
-    font-size: 25px;
-    border: 0.2rem solid #4CAF50;
-}
+
 .disabled-button {
     background-color: #555 !important;
     border-color: #555 !important;
